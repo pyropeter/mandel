@@ -93,7 +93,7 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 
   if (pNiM > higherRenderBarrier) {
     rerendered++
-    maxIter += iterChange
+    maxIter *= iterChange
     console.log("[" + rerendered + "] - " + pNiM.toFixed(2) + "% nearly unrendered pixels are too much; now rendering with " + maxIter + " iterations.")
     refresh()
   }
@@ -114,6 +114,9 @@ function refresh() {
 
 	var offsetX = centerX - canvas.width / 2;
 	var offsetY = centerY - canvas.height / 2;
+  
+  location.hash = centerX + "_" + centerY + "_" + scale
+  
 	//paintMandel(offsetX, offsetY, scale, 20);
 	renderTimeout = setTimeout(paintMandel, 100,
 			offsetX, offsetY, scale, maxIter);
@@ -168,9 +171,26 @@ $(function () {
 		}
 	}
 
-	centerX = 0;
-	centerY = 0;
-	scale = 0.004;
+  var loca = location.hash
+  loca = loca.replace('#', '')
+
+  if (!loca) {
+	  centerX = 0;
+	  centerY = 0;
+	  scale = 0.004;
+  }
+  else {
+    var infos = loca.split("_")
+    if (infos.length == 3) {
+      centerX = parseFloat(infos[0])
+      centerY = parseFloat(infos[1])
+      scale = parseFloat(infos[2])
+    }
+    else {
+      console.log("Invalid hash")
+    }
+  }
+
   maxIter = 50
   zoomFac = 1.5
   colorFac = 20
@@ -179,7 +199,7 @@ $(function () {
   rerendered = 0 // How many times should I try to rerender
   higherRenderBarrier = 0.5  // How much percent of all pixels should be nearly rendered to restart rendering with higher iteration number
   //lowerRenderBarrier = 0.1  // When to lower iteration number
-  iterChange = 10  // How much to change iteration number
+  iterChange = 1.1  // How much to change iteration number
 
 	renderTimeout = null;
 	dragX = null;
@@ -189,7 +209,7 @@ $(function () {
 
   sliders = {
     "colorFac" : {name:"Choose color wisely", min:1, max:360, step:1},
-    "zoomFac" : {name:"Choose zoom Factor wisely", min:1, max:100, step:1},
+    "zoomFac" : {name:"Choose zoom Factor wisely", min:1, max:1000, step:1},
   }
   
   for (var slid in sliders) {
