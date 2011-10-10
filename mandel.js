@@ -206,8 +206,8 @@ $(function () {
 	dragTotalY = 0;
 
   sliders = {
-    "colorFac" : {name:"Choose color wisely", min:1, max:360, step:1},
-    "zoomFac" : {name:"Choose zoom Factor wisely", min:1, max:1000, step:1},
+    "colorFac" : {name:"Choose color wisely", min:1, max:360, step:1, refresh:true},
+    "zoomFac" : {name:"Choose zoom factor wisely", min:1, max:800, step:1, refresh:false}
   }
   
   for (var slid in sliders) {
@@ -221,7 +221,7 @@ $(function () {
             .attr("data-xyz", slid)
             .attr("min", sliders[slid].min)
             .attr("max", sliders[slid].max)
-            .change(function() {window[$(this).attr("data-xyz")] = this.valueAsNumber; refresh(); $(this).next().text("(" + this.valueAsNumber + ")")})
+            .change(function() {window[$(this).attr("data-xyz")] = this.valueAsNumber; if(sliders[$(this).attr("data-xyz")].refresh) {refresh()}; $(this).next().text("(" + this.valueAsNumber + ")")})
             .attr("step", sliders[slid].step)
             .attr("value", window[slid])
         )
