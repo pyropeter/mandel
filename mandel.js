@@ -59,9 +59,14 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 			var mandelX = (x + offsetX) * scale;
 			var mandelY = (y + offsetY) * scale;
 			var c = getDepth(mandelX, mandelY, cMax);
+
+      if ( cMax - ( ( cMax / 100 ) * 10 ) < c ) {
+        pixNearIterMax++
+      }
+
 			var dataPos = (image.width * y + x) * 4;
 			if (c != 0) {
-				setPixelHsl(dataPos, c * 20);
+				setPixelHsl(dataPos, c * colorFac);
 			} else {
 				image.data[dataPos+0] = 0;
 				image.data[dataPos+1] = 0;
@@ -77,9 +82,28 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 	var endTime = new Date().getTime();
 	var deltaTime = endTime - startTime;
 	var inSetRatio = inSet / image.width / image.height * 100;
+  var pNiM = pixNearIterMax / image.width / image.height * 100
 	console.log("Render took " + deltaTime + "ms; " + inSetRatio.toFixed(2)
-			+ "% of all pixels are part of the set.");
+			+ "% of all pixels are part of the set; " + pNiM.toFixed(2) + "% were nearly not rendered.");
+  
+  if (rerendered == 4) {
+    rerendered = 0
+    return
+  }
 
+  if (pNiM > higherRenderBarrier) {
+    rerendered++
+    maxIter += iterChange
+    console.log("[" + rerendered + "] - " + pNiM.toFixed(2) + "% nearly unrendered pixels are too much; now rendering with " + maxIter + " iterations.")
+    refresh()
+  }
+  //if (pNiM < lowerRenderBarrier) {
+  //  maxIter -= iterChange
+  //  console.log(pNiM.toFixed(2) + "% nearly unrendered pixels are too few; now rendering with " + maxIter + " iterations.")
+  //  refresh()
+  //}
+
+  pixNearIterMax = 0
 	dragTotalX = 0;
 	dragTotalY = 0;
 }
@@ -92,7 +116,7 @@ function refresh() {
 	var offsetY = centerY - canvas.height / 2;
 	//paintMandel(offsetX, offsetY, scale, 20);
 	renderTimeout = setTimeout(paintMandel, 100,
-			offsetX, offsetY, scale, 30);
+			offsetX, offsetY, scale, maxIter);
 }
 
 function fastZoom(factor, offX, offY) {
@@ -147,6 +171,15 @@ $(function () {
 	centerX = 0;
 	centerY = 0;
 	scale = 0.004;
+  maxIter = 50
+  zoomFac = 1.5
+  colorFac = 20
+
+  pixNearIterMax = 0
+  rerendered = 0 // How many times should I try to rerender
+  higherRenderBarrier = 0.5  // How much percent of all pixels should be nearly rendered to restart rendering with higher iteration number
+  //lowerRenderBarrier = 0.1  // When to lower iteration number
+  iterChange = 10  // How much to change iteration number
 
 	renderTimeout = null;
 	dragX = null;
@@ -154,13 +187,42 @@ $(function () {
 	dragTotalX = 0;
 	dragTotalY = 0;
 
+  sliders = {
+    "colorFac" : {name:"Choose color wisely", min:1, max:360, step:1},
+    "zoomFac" : {name:"Choose zoom Factor wisely", min:1, max:100, step:1},
+  }
+  
+  for (var slid in sliders) {
+    $('#slider').append(
+      $('<div>')
+        .addClass("slid")
+        .text(sliders[slid].name+": ")
+        .append(
+          $('<input>')
+            .attr("type", "range")
+            .attr("data-xyz", slid)
+            .attr("min", sliders[slid].min)
+            .attr("max", sliders[slid].max)
+            .change(function() {window[$(this).attr("data-xyz")] = this.valueAsNumber; refresh(); $(this).next().text("(" + this.valueAsNumber + ")")})
+            .attr("step", sliders[slid].step)
+            .attr("value", window[slid])
+        )
+        .append(
+          $('<span>')
+            .attr("class", "desc")
+            .attr("id", sliders[slid].name+"Font")
+            .text("(" + window[slid] + ")")
+        )
+    )
+  }
+  
 	$('#foo').dblclick(function (e) {
 		var offX = e.offsetX - canvas.width / 2;
 		var offY = e.offsetY - canvas.height / 2;
 		centerX += offX;
 		centerY += offY;
-		fastZoom(1.5, offX,offY);
-		zoom(1.5);
+		fastZoom(zoomFac, offX, offY);
+		zoom(zoomFac);
 	}).mousedown(function (e) {
 		dragX = e.offsetX;
 		dragY = e.offsetY;
