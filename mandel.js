@@ -171,15 +171,13 @@ $(function () {
 		}
 	}
 
-  var loca = location.hash
-  loca = loca.replace('#', '')
+	centerX = 0;
+	centerY = 0;
+	scale = 0.004;
 
-  if (!loca) {
-	  centerX = 0;
-	  centerY = 0;
-	  scale = 0.004;
-  }
-  else {
+  var loca = location.hash
+  if (loca) {
+    loca = loca.replace('#', '')
     var infos = loca.split("_")
     if (infos.length == 3) {
       centerX = parseFloat(infos[0])
