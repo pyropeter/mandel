@@ -61,7 +61,7 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 			var c = getDepth(mandelX, mandelY, cMax);
 			var dataPos = (image.width * y + x) * 4;
 			if (c != 0) {
-				setPixelHsl(dataPos, c * 20);
+				setPixelHsl(dataPos, c * colorFac);
 			} else {
 				image.data[dataPos+0] = 0;
 				image.data[dataPos+1] = 0;
@@ -92,7 +92,7 @@ function refresh() {
 	var offsetY = centerY - canvas.height / 2;
 	//paintMandel(offsetX, offsetY, scale, 20);
 	renderTimeout = setTimeout(paintMandel, 100,
-			offsetX, offsetY, scale, 30);
+			offsetX, offsetY, scale, maxIter);
 }
 
 function fastZoom(factor, offX, offY) {
@@ -147,6 +147,9 @@ $(function () {
 	centerX = 0;
 	centerY = 0;
 	scale = 0.004;
+  maxIter = 50
+  zoomFac = 1.5
+  colorFac = 20
 
 	renderTimeout = null;
 	dragX = null;
@@ -154,13 +157,40 @@ $(function () {
 	dragTotalX = 0;
 	dragTotalY = 0;
 
+  sliders = {
+    "colorFac" : {name:"Choose color wisely", min:1, max:360, step:1}
+  }
+  
+  for (var slid in sliders) {
+    $('#slider').append(
+      $('<div>')
+        .addClass("slid")
+        .text(sliders[slid].name+": ")
+        .append(
+          $('<input>')
+            .attr("type", "range")
+            .attr("min", sliders[slid].min)
+            .attr("max", sliders[slid].max)
+            .change(function() {colorFac = this.valueAsNumber; refresh(); $(this).next().text("(" + this.valueAsNumber + ")")})
+            .attr("step", sliders[slid].step)
+            .attr("value", window[slid])
+        )
+        .append(
+          $('<span>')
+            .attr("class", "desc")
+            .attr("id", sliders[slid].name+"Font")
+            .text("(" + window[slid] + ")")
+        )
+    )
+  }
+  
 	$('#foo').dblclick(function (e) {
 		var offX = e.offsetX - canvas.width / 2;
 		var offY = e.offsetY - canvas.height / 2;
 		centerX += offX;
 		centerY += offY;
-		fastZoom(1.5, offX,offY);
-		zoom(1.5);
+		fastZoom(zoomFac, offX,offY);
+		zoom(zoomFac);
 	}).mousedown(function (e) {
 		dragX = e.offsetX;
 		dragY = e.offsetY;
