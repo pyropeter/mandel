@@ -55,6 +55,11 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 	var startTime = new Date().getTime();
 
 	for (var x = 0; x < image.width; x++) {
+		if (x % 100 == 0) {
+			ctx.fillStyle = "black"
+			ctx.fillRect(0, 0, x, 10)
+			console.log(x/image.width *100+"%")
+		}
 		for (var y = 0; y < image.height; y++) {
 			var mandelX = (x + offsetX) * scale;
 			var mandelY = (y + offsetY) * scale;
@@ -86,7 +91,7 @@ function paintMandel(offsetX, offsetY, scale, cMax) {
 			+ "% of all pixels are part of the set; "
 			+ pNiM.toFixed(2) + "% were nearly not rendered.");
 
-	if (rerendered == 4) {
+	if (rerendered == maxRenderTimes) {
 		rerendered = 0
 		return
 	}
@@ -177,7 +182,7 @@ $(function () {
 	centerX = 0;
 	centerY = 0;
 	scale = 0.004;
-  colorFac = 20
+	colorFac = 20
 
 	if (location.hash) {
 		var loca = location.hash.replace(/^#/, '')
@@ -186,7 +191,7 @@ $(function () {
 			centerX = parseFloat(infos[0])
 			centerY = parseFloat(infos[1])
 			scale = parseFloat(infos[2])
-      colorFac = parseFloat(infos[3])
+			colorFac = parseFloat(infos[3])
 		}
 		else {
 			console.log("Invalid hash")
@@ -198,12 +203,13 @@ $(function () {
 
 	pixNearIterMax = 0
 	rerendered = 0		// How many times should I try to rerender
-	higherRenderBarrier = 0.5	// How much percent of all pixels
+	higherRenderBarrier = 0.1	// How much percent of all pixels
 					// should be nearly rendered to restart
 					// rendering with higher iteration
 					// number
 	//lowerRenderBarrier = 0.1	// When to lower iteration number
-	iterChange = 1.1	// How much to change iteration number
+	iterChange = 1.2	// How much to change iteration number
+	maxRenderTimes = 80  // How often should I rerender
 
 	renderTimeout = null;
 	dragX = null;
