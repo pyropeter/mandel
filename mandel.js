@@ -118,7 +118,7 @@ function refresh() {
 	var offsetX = centerX - canvas.width / 2;
 	var offsetY = centerY - canvas.height / 2;
 
-	location.hash = centerX + "_" + centerY + "_" + scale
+	location.hash = centerX + "_" + centerY + "_" + scale + "_" + colorFac
 
 	//paintMandel(offsetX, offsetY, scale, 20);
 	renderTimeout = setTimeout(paintMandel, 100,
@@ -177,14 +177,16 @@ $(function () {
 	centerX = 0;
 	centerY = 0;
 	scale = 0.004;
+  colorFac = 20
 
 	if (location.hash) {
 		var loca = location.hash.replace(/^#/, '')
 		var infos = loca.split("_")
-		if (infos.length == 3) {
+		if (infos.length == 4) {
 			centerX = parseFloat(infos[0])
 			centerY = parseFloat(infos[1])
 			scale = parseFloat(infos[2])
+      colorFac = parseFloat(infos[3])
 		}
 		else {
 			console.log("Invalid hash")
@@ -193,7 +195,6 @@ $(function () {
 
 	maxIter = 50
 	zoomFac = 1.5
-	colorFac = 20
 
 	pixNearIterMax = 0
 	rerendered = 0		// How many times should I try to rerender
